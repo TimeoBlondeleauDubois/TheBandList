@@ -1,6 +1,21 @@
+using DotNetEnv;
+using Microsoft.EntityFrameworkCore;
 using TheBandList.Components;
+using TheBandList.Data;
 
 var builder = WebApplication.CreateBuilder(args);
+
+Env.Load();
+builder.Configuration.AddEnvironmentVariables();
+string dbHost = Environment.GetEnvironmentVariable("DB_HOST") ?? "localhost";
+string dbPort = Environment.GetEnvironmentVariable("DB_PORT") ?? "5432";
+string dbUsername = Environment.GetEnvironmentVariable("DB_USERNAME") ?? "postgres";
+string dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "password";
+string dbName = Environment.GetEnvironmentVariable("DB_NAME") ?? "database";
+
+string connectionString = $"Host={dbHost};Port={dbPort};Username={dbUsername};Password={dbPassword};Database={dbName}";
+builder.Services.AddDbContext<TheBandListDbContext>(options =>
+    options.UseNpgsql(connectionString));
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
