@@ -23,7 +23,14 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-           </DataGrid.Columns>
+                <DataGridTemplateColumn Header="Supprimer" Width="Auto">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="Supprimer" Click="SupprimerUtilisateurClick"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
         </DataGrid>
         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Orientation="Vertical" Grid.Column="1">
             <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" x:Name="TextBlockTitre" Text="Entrer le nom d'un utilisateur:" Margin="0,0,0,10"/>

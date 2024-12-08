@@ -88,7 +88,7 @@ namespace TheBandListApplication.Views
             {
                 UtilisateurSelectionne = utilisateur;
                 NomUtilisateurTextBox.Text = utilisateur.Nom;
-                TextBlockTitre.Text = $"Modifier l'utilisateur ({utilisateur.Nom})";
+                TextBlockTitre.Text = $"Modifier l'utilisateur {utilisateur.Nom}";
 
                 AjouterUtilisateurButton.Visibility = Visibility.Collapsed;
                 ModifierUtilisateurButton.Visibility = Visibility.Visible;
@@ -156,6 +156,46 @@ namespace TheBandListApplication.Views
             ModifierUtilisateurButton.Visibility = Visibility.Collapsed;
             AnnulerModificationButton.Visibility = Visibility.Collapsed;
             MessageTextBox.Text = string.Empty;
+        }
+
+        private void SupprimerUtilisateurClick(object sender, RoutedEventArgs e)
+        {
+            if (UtilisateursDataGrid.SelectedItem is Utilisateur utilisateurASupprimer)
+            {
+                var result = MessageBox.Show(
+                    $"Êtes-vous sûr de vouloir supprimer l'utilisateur {utilisateurASupprimer.Nom} ?",
+                    "Confirmation de suppression",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    using (var context = new TheBandListDbContext())
+                    {
+                        var utilisateurDb = context.Utilisateurs.FirstOrDefault(u => u.Id == utilisateurASupprimer.Id);
+                        if (utilisateurDb != null)
+                        {
+                            context.Utilisateurs.Remove(utilisateurDb);
+                            context.SaveChanges();
+
+                            MessageTextBox.Foreground = Brushes.Green;
+                            MessageTextBox.Text = $"Utilisateur {utilisateurASupprimer.Nom} supprimé avec succès.";
+                        }
+                        else
+                        {
+                            MessageTextBox.Foreground = Brushes.Red;
+                            MessageTextBox.Text = "Erreur : utilisateur introuvable dans la base de données.";
+                        }
+                    }
+
+                    ChargerUtilisateurs();
+                }
+            }
+            else
+            {
+                MessageTextBox.Foreground = Brushes.Red;
+                MessageTextBox.Text = "Veuillez sélectionner un utilisateur à supprimer.";
+            }
         }
     }
 }
