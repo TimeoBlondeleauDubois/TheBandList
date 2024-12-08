@@ -18,6 +18,7 @@ namespace TheBandListApplication
     {
         public MainWindow()
         {
+            this.WindowState = WindowState.Maximized;
             InitializeComponent();
         }
     }

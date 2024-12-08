@@ -10,5 +10,4 @@ namespace TheBandListApplication
     public partial class App : Application
     {
     }
-
 }

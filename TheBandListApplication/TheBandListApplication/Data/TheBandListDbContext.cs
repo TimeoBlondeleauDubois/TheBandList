@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
 using DotNetEnv;
+using System.Diagnostics;
+using System.IO;
 
 namespace TheBandListApplication.Data
 {
@@ -8,8 +10,8 @@ namespace TheBandListApplication.Data
     {
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            Env.Load();
-
+            Env.Load(@"..\..\..\..\..\TheBandListApplication\TheBandListApplication\.env");
+            // Env.Load();
             string host = Environment.GetEnvironmentVariable("DB_HOST");
             string port = Environment.GetEnvironmentVariable("DB_PORT");
             string database = Environment.GetEnvironmentVariable("DB_NAME");
@@ -17,10 +19,35 @@ namespace TheBandListApplication.Data
             string password = Environment.GetEnvironmentVariable("DB_PASSWORD");
 
             string connectionString = $"Host={host};Port={port};Database={database};Username={username};Password={password};SslMode=Require;Trust Server Certificate=true;";
-
             optionsBuilder.UseNpgsql(connectionString);
         }
 
-        //ici on déclare les DbSet pour chaque table de la base de données
+        public DbSet<Utilisateur> Utilisateurs { get; set; }
+        public DbSet<Niveau> Niveaux { get; set; }
+        public DbSet<NiveauDifficulteRate> NiveauxDifficulteRates { get; set; }
+        public DbSet<DifficulteFeature> DifficulteFeatures { get; set; }
+        public DbSet<Pack> Packs { get; set; }
+        public DbSet<PackNiveau> PackNiveaux { get; set; }
+        public DbSet<ReussitePack> ReussitesPack { get; set; }
+        public DbSet<Classement> Classements { get; set; }
+        public DbSet<CreateurNiveau> CreateursNiveaux { get; set; }
+        public DbSet<ReussiteNiveau> ReussitesNiveaux { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<PackNiveau>()
+                .HasKey(pn => new { pn.PackId, pn.NiveauId });
+
+            modelBuilder.Entity<ReussitePack>()
+                .HasKey(rp => new { rp.UtilisateurId, rp.PackId });
+
+            modelBuilder.Entity<CreateurNiveau>()
+                .HasKey(cn => new { cn.CreateurId, cn.NiveauId });
+
+            modelBuilder.Entity<ReussiteNiveau>()
+                .HasKey(rn => new { rn.UtilisateurId, rn.NiveauId });
+
+            base.OnModelCreating(modelBuilder);
+        }
     }
 }

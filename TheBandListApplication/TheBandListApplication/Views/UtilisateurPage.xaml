@@ -1,0 +1,32 @@
+﻿<Page x:Class="TheBandListApplication.Views.UtilisateurPage"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TheBandListApplication.Views"
+        mc:Ignorable="d"
+        Title="Utilisateur"
+        Loaded="UtilisateurPageLoaded">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0, 20, 0, 10">
+            <TextBlock VerticalAlignment="Center" Text="Entrer le nom d'un utilisateur:"/>
+            <TextBox x:Name="NomUtilisateurTextBox" Width="200" Margin="10 0"/>
+            <Button Content="Ajouter l'utilisateur" Click="AjouterUnUtilisateurClick"/>
+            <TextBlock Margin="10,0,0,0" VerticalAlignment="Center" x:Name="MessageTextBox"></TextBlock>
+        </StackPanel>
+        <TextBlock Grid.Row="1" Text="Liste des utilisateurs existants:" FontWeight="Bold" Margin="0 10"/>
+        <ListBox x:Name="UtilisateursListBox" Grid.Row="2">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Nom}" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</Page>
