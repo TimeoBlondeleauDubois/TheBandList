@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,7 +23,9 @@ namespace TheBandListApplication.Views
     public partial class DifficultePage : Page
     {
         private NiveauDifficulteRate DifficulteSelectionnee;
+        private DifficulteFeature FeatureSelectionnee;
         private List<NiveauDifficulteRate> ListeNiveauxDifficulte;
+        private List<DifficulteFeature> ListeFeatures;
 
         public DifficultePage()
         {
@@ -33,7 +36,10 @@ namespace TheBandListApplication.Views
         private void DifficultePageLoaded(object sender, RoutedEventArgs e)
         {
             ChargerDifficulte();
+            ChargerFeatures();
             MessageTextBox.Text = "";
+            MessageFeatureTextBox.Text = "";
+            ChargerDifficultesDansComboBox();
         }
 
         private void ChargerDifficulte()
@@ -83,6 +89,7 @@ namespace TheBandListApplication.Views
             MessageTextBox.Foreground = Brushes.Green;
             MessageTextBox.Text = $"Difficulté '{nomDifficulte}' ajoutée avec succès !";
             ChargerDifficulte();
+            ChargerDifficultesDansComboBox();
         }
 
         private void ModifierDifficulteClick(object sender, RoutedEventArgs e)
@@ -96,6 +103,7 @@ namespace TheBandListApplication.Views
                 AjouterDifficulteButton.Visibility = Visibility.Collapsed;
                 ModifierDifficulteButton.Visibility = Visibility.Visible;
                 AnnulerModificationButton.Visibility = Visibility.Visible;
+                ChargerDifficultesDansComboBox();
             }
         }
 
@@ -194,6 +202,8 @@ namespace TheBandListApplication.Views
                     }
 
                     ChargerDifficulte();
+                    ChargerDifficultesDansComboBox();
+                    ChargerFeatures();
                 }
             }
             else
@@ -201,6 +211,273 @@ namespace TheBandListApplication.Views
                 MessageTextBox.Foreground = Brushes.Red;
                 MessageTextBox.Text = "Veuillez sélectionner une difficulté à supprimer.";
             }
+        }
+
+        private void ChargerFeatures()
+        {
+            using (var context = new TheBandListDbContext())
+            {
+                ListeFeatures = context.DifficulteFeatures.ToList();
+
+                ListeFeatures.Insert(0, new DifficulteFeature { Id = 0, NomDuFeature = "Aucune feature sélectionnée" });
+
+                FeaturesComboBox.ItemsSource = ListeFeatures;
+                FeaturesComboBox.SelectedIndex = 0;
+            }
+        }
+
+        private void ChargerDifficultesDansComboBox()
+        {
+            using (var context = new TheBandListDbContext())
+            {
+                var difficulteList = context.NiveauxDifficulteRates.ToList();
+                difficulteList.Insert(0, new NiveauDifficulteRate { Id = 0, NomDeLaDifficulte = "Aucune difficulté" });
+                DifficulteComboBox.ItemsSource = difficulteList;
+                DifficulteComboBox.SelectedIndex = 0;
+            }
+        }
+
+        private void AjouterFeatureClick(object sender, RoutedEventArgs e)
+        {
+            string nomFeature = NomFeatureTextBox.Text.Trim();
+            var difficulteSelectionnee = DifficulteComboBox.SelectedItem as NiveauDifficulteRate;
+
+            if (string.IsNullOrEmpty(nomFeature))
+            {
+                MessageFeatureTextBox.Foreground = Brushes.Red;
+                MessageFeatureTextBox.Text = "Veuillez entrer un nom pour le feature.";
+                return;
+            }
+
+            if (difficulteSelectionnee == null || difficulteSelectionnee.Id == 0)
+            {
+                MessageFeatureTextBox.Foreground = Brushes.Red;
+                MessageFeatureTextBox.Text = "Veuillez sélectionner une difficulté valide.";
+                return;
+            }
+
+            if (string.IsNullOrEmpty(imageBase64))
+            {
+                MessageFeatureTextBox.Foreground = Brushes.Red;
+                MessageFeatureTextBox.Text = "Veuillez sélectionner une image.";
+                return;
+            }
+
+            using (var context = new TheBandListDbContext())
+            {
+                var nouveauFeature = new DifficulteFeature
+                {
+                    NomDuFeature = nomFeature,
+                    Image = imageBase64,
+                    DifficulteRateId = difficulteSelectionnee.Id
+                };
+                context.DifficulteFeatures.Add(nouveauFeature);
+                context.SaveChanges();
+            }
+
+            MessageFeatureTextBox.Foreground = Brushes.Green;
+            MessageFeatureTextBox.Text = $"Feature '{nomFeature}' ajouté avec succès !";
+
+            ResetFormulaire();
+            ChargerFeatures();
+            imageBase64 = null;
+            DifficulteComboBox.SelectedIndex = 0;
+            FeaturesComboBox.SelectedIndex = 0;
+        }
+
+        private void ConfirmerModificationFeatureClick(object sender, RoutedEventArgs e)
+        {
+            if (FeatureSelectionnee != null)
+            {
+                string nouveauNom = NomFeatureTextBox.Text.Trim();
+                var difficulteSelectionnee = DifficulteComboBox.SelectedItem as NiveauDifficulteRate;
+
+                if (string.IsNullOrEmpty(nouveauNom))
+                {
+                    MessageFeatureTextBox.Foreground = Brushes.Red;
+                    MessageFeatureTextBox.Text = "Le nom du feature ne peut pas être vide.";
+                    return;
+                }
+
+                if (difficulteSelectionnee == null || difficulteSelectionnee.Id == 0)
+                {
+                    MessageFeatureTextBox.Foreground = Brushes.Red;
+                    MessageFeatureTextBox.Text = "Veuillez sélectionner une difficulté valide.";
+                    return;
+                }
+
+                using (var context = new TheBandListDbContext())
+                {
+                    var featureDb = context.DifficulteFeatures
+                        .FirstOrDefault(f => f.Id == FeatureSelectionnee.Id);
+
+                    if (featureDb != null)
+                    {
+                        featureDb.NomDuFeature = nouveauNom;
+                        featureDb.Image = imageBase64 ?? featureDb.Image;
+                        featureDb.DifficulteRateId = difficulteSelectionnee.Id;
+
+                        context.SaveChanges();
+
+                        MessageFeatureTextBox.Foreground = Brushes.Green;
+                        MessageFeatureTextBox.Text = $"Feature '{FeatureSelectionnee.NomDuFeature}' modifié avec succès.";
+                    }
+                    else
+                    {
+                        MessageFeatureTextBox.Foreground = Brushes.Red;
+                        MessageFeatureTextBox.Text = "Erreur : le feature n'existe plus dans la base de données.";
+                    }
+                }
+
+                ResetFormulaire();
+                ChargerFeatures();
+                AjouterFeatureButton.Visibility = Visibility.Visible;
+                ModifierFeatureButton.Visibility = Visibility.Collapsed;
+                AnnulerFeatureModificationButton.Visibility = Visibility.Collapsed;
+                SupprimerFeatureButton.Visibility = Visibility.Collapsed;
+                imageBase64 = null;
+                DifficulteComboBox.SelectedIndex = 0;
+                FeaturesComboBox.SelectedIndex = 0;
+            }
+        }
+
+        private void AnnulerFeatureModificationClick(object sender, RoutedEventArgs e)
+        {
+            FeatureSelectionnee = null;
+            NomFeatureTextBox.Text = string.Empty;
+            SelectedImagePreview.Source = null;
+            SelectedImagePreview.Visibility = Visibility.Collapsed;
+
+            AjouterFeatureButton.Visibility = Visibility.Visible;
+            ModifierFeatureButton.Visibility = Visibility.Collapsed;
+            AnnulerFeatureModificationButton.Visibility = Visibility.Collapsed;
+            SupprimerFeatureButton.Visibility = Visibility.Collapsed;
+            MessageFeatureTextBox.Text = string.Empty;
+            imageBase64 = null;
+            DifficulteComboBox.SelectedIndex = 0;
+            FeaturesComboBox.SelectedIndex = 0;
+        }
+
+        private string imageBase64 = null;
+
+        private void ImageSelectionButtonClick(object sender, RoutedEventArgs e)
+        {
+            var openFileDialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Filter = "Images (*.jpg;*.jpeg;*.png)|*.jpg;*.jpeg;*.png"
+            };
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                var filePath = openFileDialog.FileName;
+
+                byte[] imageBytes = System.IO.File.ReadAllBytes(filePath);
+                imageBase64 = Convert.ToBase64String(imageBytes);
+
+                SelectedImagePreview.Source = new BitmapImage(new Uri(filePath));
+                SelectedImagePreview.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void FeaturesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (FeaturesComboBox.SelectedItem is DifficulteFeature feature && feature.Id != 0)
+            {
+                FeatureSelectionnee = feature;
+
+                NomFeatureTextBox.Text = feature.NomDuFeature;
+
+                if (!string.IsNullOrEmpty(feature.Image))
+                {
+                    byte[] imageBytes = Convert.FromBase64String(feature.Image);
+                    using (var stream = new MemoryStream(imageBytes))
+                    {
+                        var bitmap = new BitmapImage();
+                        bitmap.BeginInit();
+                        bitmap.StreamSource = stream;
+                        bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                        bitmap.EndInit();
+                        SelectedImagePreview.Source = bitmap;
+                        SelectedImagePreview.Visibility = Visibility.Visible;
+                    }
+                    imageBase64 = feature.Image;
+                }
+                else
+                {
+                    SelectedImagePreview.Source = null;
+                    SelectedImagePreview.Visibility = Visibility.Collapsed;
+                    imageBase64 = null;
+                }
+
+                DifficulteComboBox.SelectedItem = DifficulteComboBox.Items
+                    .Cast<NiveauDifficulteRate>()
+                    .FirstOrDefault(d => d.Id == feature.DifficulteRateId);
+
+                AjouterFeatureButton.Visibility = Visibility.Collapsed;
+                ModifierFeatureButton.Visibility = Visibility.Visible;
+                SupprimerFeatureButton.Visibility = Visibility.Visible;
+                AnnulerFeatureModificationButton.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                FeatureSelectionnee = null;
+                ResetFormulaire();
+            }
+        }
+
+        private void SupprimerFeatureClick(object sender, RoutedEventArgs e)
+        {
+            if (FeatureSelectionnee != null)
+            {
+                var result = MessageBox.Show(
+                    $"Êtes-vous sûr de vouloir supprimer le feature '{FeatureSelectionnee.NomDuFeature}' ?",
+                    "Confirmation de suppression",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    using (var context = new TheBandListDbContext())
+                    {
+                        var featureDb = context.DifficulteFeatures
+                            .FirstOrDefault(f => f.Id == FeatureSelectionnee.Id);
+
+                        if (featureDb != null)
+                        {
+                            context.DifficulteFeatures.Remove(featureDb);
+                            context.SaveChanges();
+
+                            MessageFeatureTextBox.Foreground = Brushes.Green;
+                            MessageFeatureTextBox.Text = $"Feature '{FeatureSelectionnee.NomDuFeature}' supprimée avec succès.";
+                        }
+                        else
+                        {
+                            MessageFeatureTextBox.Foreground = Brushes.Red;
+                            MessageFeatureTextBox.Text = "Erreur : le feature n'existe plus dans la base de données.";
+                        }
+                    }
+
+                    ResetFormulaire();
+                    ChargerFeatures();
+                    AjouterFeatureButton.Visibility = Visibility.Visible;
+                    ModifierFeatureButton.Visibility = Visibility.Collapsed;
+                    AnnulerFeatureModificationButton.Visibility = Visibility.Collapsed;
+                    SupprimerFeatureButton.Visibility = Visibility.Collapsed;
+                    imageBase64 = null;
+                    DifficulteComboBox.SelectedIndex = 0;
+                    FeaturesComboBox.SelectedIndex = 0;
+                }
+            }
+        }
+
+        private void ResetFormulaire()
+        {
+            NomFeatureTextBox.Text = string.Empty;
+            SelectedImagePreview.Source = null;
+            SelectedImagePreview.Visibility = Visibility.Collapsed;
+            imageBase64 = null;
+            DifficulteComboBox.SelectedIndex = 0;
+            MessageFeatureTextBox.Text = string.Empty;
         }
     }
 }

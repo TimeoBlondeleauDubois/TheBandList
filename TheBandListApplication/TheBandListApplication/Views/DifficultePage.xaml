@@ -3,7 +3,6 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-      xmlns:local="clr-namespace:TheBandListApplication.Views"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
       Title="DifficultePage"
@@ -11,37 +10,69 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="3*"/>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
         </Grid.ColumnDefinitions>
 
-        <TextBlock Grid.Column="0" HorizontalAlignment="Center" Text="Liste des difficultés existantes:" FontWeight="Bold" Margin="0,5,0,0"/>
-        <DataGrid Grid.Column="0" x:Name="DifficulteDataGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" Margin="10,30,10,10">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Nom" Binding="{Binding NomDeLaDifficulte}" Width="auto"/>
-                <DataGridTemplateColumn Header="Modifier" Width="Auto">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <Button Content="Modifier" Click="ModifierDifficulteClick"/>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-                <DataGridTemplateColumn Header="Supprimer" Width="Auto">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <Button Content="Supprimer" Click="SupprimerDifficulteClick"/>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-            </DataGrid.Columns>
-        </DataGrid>
-        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Orientation="Vertical" Grid.Column="1">
-            <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" x:Name="TextBlockTitre" Text="Entrer le nom d'une difficulté:" Margin="0,0,0,10"/>
-            <TextBox VerticalAlignment="Center" HorizontalAlignment="Center" x:Name="NomDifficulteTextBox" Width="200"/>
-            <Button VerticalAlignment="Center" HorizontalAlignment="Center" x:Name="AjouterDifficulteButton" Content="Ajouter la difficulté" Click="AjouterDifficulteClick" Visibility="Visible" Margin="0,10,0,0"/>
-            <Button VerticalAlignment="Center" HorizontalAlignment="Center" x:Name="ModifierDifficulteButton" Content="Modifier" Click="ConfirmerModificationClick" Visibility="Collapsed" Margin="0,10,0,10"/>
-            <Button VerticalAlignment="Center" HorizontalAlignment="Center" x:Name="AnnulerModificationButton" Content="Annuler" Click="AnnulerModificationClick" Visibility="Collapsed"/>
-            <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" x:Name="MessageTextBox" Margin="0,10,0,0"></TextBlock>
-        </StackPanel>
+        <Grid Grid.Column="0" Margin="10">
+            <TextBlock HorizontalAlignment="Center" Text="Liste des difficultés existantes:" FontWeight="Bold" Margin="0,5,0,0"/>
+            <DataGrid x:Name="DifficulteDataGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" Margin="0,30,0,10">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Nom" Binding="{Binding NomDeLaDifficulte}" Width="*"/>
+                    <DataGridTemplateColumn Header="Modifier">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="Modifier" Click="ModifierDifficulteClick"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Supprimer">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="Supprimer" Click="SupprimerDifficulteClick"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Orientation="Vertical">
+                <TextBlock x:Name="TextBlockTitre" Text="Entrer le nom d'une difficulté:" Margin="0,0,0,10"/>
+                <TextBox x:Name="NomDifficulteTextBox" Width="200"/>
+                <Button x:Name="AjouterDifficulteButton" Content="Ajouter la difficulté" Click="AjouterDifficulteClick" Visibility="Visible" Margin="0,10,0,0"/>
+                <Button x:Name="ModifierDifficulteButton" Content="Modifier" Click="ConfirmerModificationClick" Visibility="Collapsed" Margin="0,10,0,10"/>
+                <Button x:Name="AnnulerModificationButton" Content="Annuler" Click="AnnulerModificationClick" Visibility="Collapsed"/>
+                <TextBlock x:Name="MessageTextBox" Margin="0,10,0,0"></TextBlock>
+            </StackPanel>
+        </Grid>
+
+        <Grid Grid.Column="1" Margin="10">
+            <TextBlock HorizontalAlignment="Center" Text="Liste des features associées :" FontWeight="Bold" Margin="0,5,0,0"/>
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Orientation="Vertical">
+                <TextBlock Text="Nom du feature :" Margin="0,10,0,0"/>
+                <TextBox x:Name="NomFeatureTextBox" Width="200"/>
+
+                <TextBlock Text="Difficulté associée :" Margin="0,10,0,0"/>
+                <ComboBox x:Name="DifficulteComboBox" Width="200" 
+                  DisplayMemberPath="NomDeLaDifficulte" 
+                  SelectedValuePath="Id" />
+
+                <TextBlock Text="Image associée :" Margin="0,10,0,0"/>
+                <Button x:Name="ImageSelectionButton" Content="Choisir une image" Click="ImageSelectionButtonClick" Margin="0,5,0,0"/>
+                <Image x:Name="SelectedImagePreview" Width="200" Height="150" Stretch="Uniform" Visibility="Collapsed" Margin="0,10,0,0"/>
+
+                <Button x:Name="AjouterFeatureButton" Content="Ajouter le feature" Click="AjouterFeatureClick" Visibility="Visible" Margin="0,10,0,0"/>
+                <Button x:Name="ModifierFeatureButton" Content="Modifier" Click="ConfirmerModificationFeatureClick" Visibility="Collapsed" Margin="0,10,0,0"/>
+                <Button x:Name="AnnulerFeatureModificationButton" Content="Annuler" Click="AnnulerFeatureModificationClick" Visibility="Collapsed" Margin="0,10,0,0"/>
+                <Button x:Name="SupprimerFeatureButton" Content="Supprimer" Click="SupprimerFeatureClick" Visibility="Collapsed" Margin="0,10,0,0"/>
+
+                <TextBlock x:Name="MessageFeatureTextBox" Margin="0,10,0,0" Foreground="Green" />
+            </StackPanel>
+
+            <StackPanel Orientation="Vertical" Margin="0,20,0,0">
+                <TextBlock Text="Modifier/Supprimer une feature existante :" FontWeight="Bold" Margin="0,0,0,5"/>
+                <ComboBox x:Name="FeaturesComboBox" Width="200" SelectionChanged="FeaturesComboBox_SelectionChanged" 
+                  DisplayMemberPath="NomDuFeature" SelectedValuePath="Id"/>
+            </StackPanel>
+        </Grid>
     </Grid>
 </Page>
