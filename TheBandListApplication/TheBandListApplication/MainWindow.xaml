@@ -11,6 +11,9 @@
             <TabItem Header="Utilisateur">
                 <Frame Source="/Views/UtilisateurPage.xaml"/>
             </TabItem>
+            <TabItem Header="Difficulté">
+                <Frame Source="/Views/DifficultePage.xaml"/>
+            </TabItem>
         </TabControl>
     </Grid>
 </Window>

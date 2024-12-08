@@ -7,11 +7,13 @@
       mc:Ignorable="d"
       Title="Utilisateur"
       Loaded="UtilisateurPageLoaded">
+    
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="3*"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
+        
         <TextBlock Grid.Column="0" HorizontalAlignment="Center" Text="Liste des utilisateurs existants:" FontWeight="Bold" Margin="0,5,0,0"/>
         <DataGrid Grid.Column="0" x:Name="UtilisateursDataGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" Margin="10,30,10,10">
             <DataGrid.Columns>
