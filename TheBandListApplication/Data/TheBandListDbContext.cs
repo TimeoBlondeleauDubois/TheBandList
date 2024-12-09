@@ -10,7 +10,7 @@ namespace TheBandListApplication.Data
     {
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            Env.Load(@"..\..\..\..\..\TheBandListApplication\TheBandListApplication\.env");
+            Env.Load(@"..\..\..\..\TheBandListApplication\.env");
             //pour Update-Database
             // Env.Load();
             string host = Environment.GetEnvironmentVariable("DB_HOST");
