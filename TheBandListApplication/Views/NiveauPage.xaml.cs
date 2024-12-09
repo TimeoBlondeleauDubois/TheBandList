@@ -95,7 +95,7 @@ namespace TheBandListApplication.Views
             }
 
             MessageNiveauTextBox.Foreground = Brushes.Green;
-            MessageNiveauTextBox.Text = $"Niveau '{nomNiveau}' ajouté avec succès.";
+            MessageNiveauTextBox.Text = $"Niveau {nomNiveau} ajouté avec succès.";
             ResetFormulaire();
             ChargerNiveaux();
         }
@@ -179,7 +179,7 @@ namespace TheBandListApplication.Views
                 }
 
                 MessageNiveauTextBox.Foreground = Brushes.Green;
-                MessageNiveauTextBox.Text = $"Niveau '{NiveauSelectionne.Nom}' modifié avec succès.";
+                MessageNiveauTextBox.Text = $"Niveau {NiveauSelectionne.Nom} modifié avec succès.";
                 ResetFormulaire();
                 ChargerNiveaux();
             }
@@ -194,9 +194,11 @@ namespace TheBandListApplication.Views
 
                 VerifieurComboBox.ItemsSource = utilisateurs;
                 PublisherComboBox.ItemsSource = utilisateurs;
+                CreateurComboBox.ItemsSource = utilisateurs;
 
                 VerifieurComboBox.SelectedIndex = 0;
                 PublisherComboBox.SelectedIndex = 0;
+                CreateurComboBox.SelectedIndex = 0;
             }
         }
 
@@ -217,7 +219,7 @@ namespace TheBandListApplication.Views
             if (NiveauSelectionne != null)
             {
                 var result = MessageBox.Show(
-                    $"Êtes-vous sûr de vouloir supprimer le niveau '{NiveauSelectionne.Nom}' ?",
+                    $"Êtes-vous sûr de vouloir supprimer le niveau {NiveauSelectionne.Nom} ?",
                     "Confirmation de suppression",
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Warning
@@ -236,7 +238,7 @@ namespace TheBandListApplication.Views
                     }
 
                     MessageNiveauTextBox.Foreground = Brushes.Green;
-                    MessageNiveauTextBox.Text = $"Niveau '{NiveauSelectionne.Nom}' supprimé.";
+                    MessageNiveauTextBox.Text = $"Niveau {NiveauSelectionne.Nom} supprimé.";
                     ResetFormulaire();
                     ChargerNiveaux();
                 }
@@ -268,6 +270,7 @@ namespace TheBandListApplication.Views
             ModifierNiveauButton.Visibility = Visibility.Collapsed;
             AnnulerModificationNiveauButton.Visibility = Visibility.Collapsed;
             SupprimerNiveauButton.Visibility = Visibility.Collapsed;
+            ListeCreateur.Text = "Liste des créateurs :";
         }
 
         private void MiniatureSelectionButtonClick(object sender, RoutedEventArgs e)
@@ -293,6 +296,16 @@ namespace TheBandListApplication.Views
             NiveauSelectionne = NiveauxComboBox.SelectedItem as Niveau;
             if (NiveauSelectionne != null && NiveauSelectionne.Id != 0)
             {
+                using (var context = new TheBandListDbContext())
+                {
+                    var createurs = context.CreateursNiveaux
+                        .Where(cn => cn.NiveauId == NiveauSelectionne.Id)
+                        .Select(cn => cn.Createur)
+                        .ToList();
+                    CreateursListBox.ItemsSource = createurs;
+                }
+
+                ListeCreateur.Text = $"Liste des créateurs du niveau {NiveauSelectionne.Nom} :";
                 NomNiveauTextBox.Text = NiveauSelectionne.Nom;
                 MotDePasseTextBox.Text = NiveauSelectionne.MotDePasse;
                 UrlVerificationTextBox.Text = NiveauSelectionne.UrlIframeSrcVerification;
@@ -329,12 +342,107 @@ namespace TheBandListApplication.Views
             else
             {
                 ResetFormulaire();
+                CreateursListBox.ItemsSource = null;
             }
         }
 
         private void AnnulerModificationNiveauClick(object sender, RoutedEventArgs e)
         {
             ResetFormulaire();
+        }
+
+        private void AjouterCreateurButtonClick(object sender, RoutedEventArgs e)
+        {
+            if (NiveauSelectionne == null || NiveauSelectionne.Id == 0)
+            {
+                MessageNiveauTextBoxCreateur.Foreground = Brushes.Red;
+                MessageNiveauTextBoxCreateur.Text = "Veuillez sélectionner un niveau.";
+                return;
+            }
+
+            var createurSelectionne = CreateurComboBox.SelectedItem as Utilisateur;
+
+            if (createurSelectionne == null || createurSelectionne.Id == 0)
+            {
+                MessageNiveauTextBoxCreateur.Foreground = Brushes.Red;
+                MessageNiveauTextBoxCreateur.Text = "Veuillez sélectionner un créateur.";
+                return;
+            }
+
+            using (var context = new TheBandListDbContext())
+            {
+                var createurNiveauExist = context.CreateursNiveaux
+                    .Any(cn => cn.CreateurId == createurSelectionne.Id && cn.NiveauId == NiveauSelectionne.Id);
+
+                if (!createurNiveauExist)
+                {
+                    var createurNiveau = new CreateurNiveau
+                    {
+                        CreateurId = createurSelectionne.Id,
+                        NiveauId = NiveauSelectionne.Id
+                    };
+
+                    context.CreateursNiveaux.Add(createurNiveau);
+                    context.SaveChanges();
+
+                    var createurs = context.CreateursNiveaux
+                        .Where(cn => cn.NiveauId == NiveauSelectionne.Id)
+                        .Select(cn => cn.Createur)
+                        .ToList();
+                    CreateursListBox.ItemsSource = createurs;
+
+                    MessageNiveauTextBoxCreateur.Foreground = Brushes.Green;
+                    MessageNiveauTextBoxCreateur.Text = $"Créateur {createurSelectionne.Nom} ajouté au niveau {NiveauSelectionne.Nom}.";
+                }
+                else
+                {
+                    MessageNiveauTextBoxCreateur.Foreground = Brushes.Red;
+                    MessageNiveauTextBoxCreateur.Text = "Ce créateur est déjà associé à ce niveau.";
+                }
+
+            }
+        }
+
+        private void SupprimerCreateurButtonClick(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            if (button != null)
+            {
+                var stackPanel = button.Parent as StackPanel;
+                if (stackPanel != null)
+                {
+                    var createur = stackPanel.DataContext as Utilisateur;
+                    if (createur != null && NiveauSelectionne != null)
+                    {
+                        using (var context = new TheBandListDbContext())
+                        {
+                            var createurNiveau = context.CreateursNiveaux
+                                .FirstOrDefault(cn => cn.CreateurId == createur.Id && cn.NiveauId == NiveauSelectionne.Id);
+
+                            if (createurNiveau != null)
+                            {
+                                context.CreateursNiveaux.Remove(createurNiveau);
+                                context.SaveChanges();
+
+                                var createurs = context.CreateursNiveaux
+                                    .Where(cn => cn.NiveauId == NiveauSelectionne.Id)
+                                    .Select(cn => cn.Createur)
+                                    .ToList();
+
+                                CreateursListBox.ItemsSource = createurs;
+
+                                MessageNiveauTextBoxCreateur.Foreground = Brushes.Green;
+                                MessageNiveauTextBoxCreateur.Text = $"Le créateur {createur.Nom} a été supprimé du niveau {NiveauSelectionne.Nom}.";
+                            }
+                            else
+                            {
+                                MessageNiveauTextBoxCreateur.Foreground = Brushes.Red;
+                                MessageNiveauTextBoxCreateur.Text = "Cette association créateur-niveau n'existe pas.";
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
