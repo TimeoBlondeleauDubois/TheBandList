@@ -19,6 +19,8 @@ namespace TheBandListApplication.Data
             string username = Environment.GetEnvironmentVariable("DB_USERNAME");
             string password = Environment.GetEnvironmentVariable("DB_PASSWORD");
 
+
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
             string connectionString = $"Host={host};Port={port};Database={database};Username={username};Password={password};SslMode=Require;Trust Server Certificate=true;";
             optionsBuilder.UseNpgsql(connectionString);
         }
