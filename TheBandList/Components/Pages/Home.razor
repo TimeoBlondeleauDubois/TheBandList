@@ -1,7 +1,148 @@
 ﻿@page "/"
+@inject TheBandListDbContext DbContext
+@using TheBandList.Data
+@using TheBandListApplication.Data
+@using Microsoft.EntityFrameworkCore
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Liste des niveaux</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="container">
+    <div class="row">
+        <div class="col-6">
+            <h3>Liste des Niveaux</h3>
+            @if (niveaux == null || classements == null)
+            {
+                <p>Chargement des niveaux...</p>
+            }
+            else
+            {
+                <ul>
+                    @foreach (var classement in classements)
+                    {
+                        var niveau = niveaux.FirstOrDefault(n => n.Id == classement.NiveauId);
+                        <li @onclick="() => AfficherDetailsNiveau(niveau.Id)">
+                            @niveau.Nom - Classement: @classement.ClassementPosition
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
 
-Welcome to your new app.
+        <div class="col-6">
+            <h3>Détails du niveau</h3>
+            @if (niveauSelectionne == null)
+            {
+                <p>Aucun niveau sélectionné</p>
+            }
+            else
+            {
+                <div>
+                    <p><strong>ID du niveau:</strong> @niveauSelectionne.IdDuNiveauDansLeJeu</p>
+                    <p><strong>Nom:</strong> @niveauSelectionne.Nom</p>
+                    <p><strong>Mot de passe:</strong> @niveauSelectionne.MotDePasse</p>
+                    <p><strong>Durée:</strong> @ConvertirDurée(niveauSelectionne.Duree)</p>
+                    <p><strong>Date d'ajout:</strong> @niveauSelectionne.DateAjout.ToString("dd/MM/yyyy")</p>
+
+                    <p><strong>Difficulté:</strong> @niveauSelectionne.Rating?.DifficulteRate?.NomDeLaDifficulte</p>
+                    <p><strong>Vérifieur:</strong> @niveauSelectionne.Verifieur?.Nom</p>
+                    <p><strong>Publisher:</strong> @niveauSelectionne.Publisher?.Nom</p>
+
+                    <h5>Miniature :</h5>
+                    @if (!string.IsNullOrEmpty(niveauSelectionne.Miniature))
+                    {
+                        <img src="data:image/png;base64,@niveauSelectionne.Miniature" alt="Miniature du niveau" class="img-fluid" />
+                    }
+                    else
+                    {
+                        <p>Aucune miniature disponible</p>
+                    }
+
+                    <h5>Vidéo de vérification :</h5>
+                    @if (!string.IsNullOrEmpty(niveauSelectionne.UrlIframeSrcVerification))
+                    {
+                        <iframe width="560" height="315"
+                                src="@niveauSelectionne.UrlIframeSrcVerification"
+                                title="Vidéo de vérification"
+                                frameborder="0"
+                                allowfullscreen>
+                        </iframe>
+                    }
+                    else
+                    {
+                        <p>Aucune vidéo disponible</p>
+                    }
+
+                    <h5>Classement :</h5>
+                    @if (classements != null)
+                    {
+                        var classementsDuNiveau = classements.Where(c => c.NiveauId == niveauSelectionne.Id).ToList();
+                        if (classementsDuNiveau.Any())
+                        {
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Position</th>
+                                        <th>Joueur</th>
+                                        <th>Points</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var classement in classementsDuNiveau)
+                                    {
+                                        <tr>
+                                            <td>@classement.ClassementPosition</td>
+                                            <td>@classement.Points</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        else
+                        {
+                            <p>Aucun classement disponible pour ce niveau</p>
+                        }
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Niveau> niveaux;
+    private List<Classement> classements;
+    private Niveau niveauSelectionne;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            niveaux = await DbContext.Niveaux
+                                      .Include(n => n.Rating)
+                                          .ThenInclude(r => r.DifficulteRate)
+                                      .Include(n => n.Verifieur)
+                                      .Include(n => n.Publisher)
+                                      .ToListAsync();
+
+            classements = await DbContext.Classements
+                                         .OrderBy(c => c.ClassementPosition)
+                                         .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur lors du chargement des niveaux et classements: {ex.Message}");
+        }
+    }
+
+    private void AfficherDetailsNiveau(int niveauId)
+    {
+        niveauSelectionne = niveaux?.FirstOrDefault(n => n.Id == niveauId);
+    }
+
+    private string ConvertirDurée(int dureeEnSecondes)
+    {
+        int minutes = dureeEnSecondes / 60;
+        int secondes = dureeEnSecondes % 60;
+        return $"{minutes} min {secondes} sec";
+    }
+}
