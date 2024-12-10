@@ -1,0 +1,50 @@
+﻿<Page x:Class="TheBandListApplication.Views.ClassementPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      mc:Ignorable="d" 
+      Loaded="ClassementPageLoaded">
+
+    <Grid>
+        <DataGrid x:Name="DataGridClassements" AutoGenerateColumns="False" CanUserAddRows="False" Margin="10" ItemsSource="{Binding Classements}">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Nom du Niveau" Binding="{Binding Niveau.Nom}" IsReadOnly="True" />
+                <DataGridTextColumn Header="Placement" SortMemberPath="ClassementPosition" Binding="{Binding ClassementPosition}" />
+                <DataGridTemplateColumn Header="Actions">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="Valider" Click="OnValidateClick" CommandParameter="{Binding}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Points" Binding="{Binding Points}" />
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <TextBlock Text="Niveaux pas encore placés:" Margin="10,270,10,10" HorizontalAlignment="Center" FontWeight="Bold" Visibility="{Binding NoPlacementVisibility}" />
+        <DataGrid x:Name="DataGridNiveauxSansPlacement" AutoGenerateColumns="False" CanUserAddRows="False" Margin="10,300,10,10"
+              ItemsSource="{Binding NiveauxSansPlacement}" Visibility="{Binding NoPlacementVisibility}">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Nom du Niveau" Binding="{Binding Nom}" IsReadOnly="True" />
+                <DataGridTemplateColumn Header="Placement">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Width="50" Text="{Binding Placement, UpdateSourceTrigger=PropertyChanged}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Actions">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="Attribuer" Click="OnAttribuerClick" CommandParameter="{Binding}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <TextBlock x:Name="StatusMessage" Margin="10,500,10,10" HorizontalAlignment="Center" FontWeight="Bold" TextAlignment="Center" FontSize="14" />
+    </Grid>
+
+</Page>

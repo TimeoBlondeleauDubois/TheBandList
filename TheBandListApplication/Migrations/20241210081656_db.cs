@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace TheBandListApplication.Migrations
 {
     /// <inheritdoc />
-    public partial class Db : Migration
+    public partial class db : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -79,7 +79,7 @@ namespace TheBandListApplication.Migrations
                 {
                     UtilisateurId = table.Column<int>(type: "integer", nullable: false),
                     PackId = table.Column<int>(type: "integer", nullable: false),
-                    DateReussite = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    DateReussite = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -110,7 +110,8 @@ namespace TheBandListApplication.Migrations
                     UrlIframeSrcVerification = table.Column<string>(type: "text", nullable: false),
                     Miniature = table.Column<string>(type: "text", nullable: false),
                     Duree = table.Column<int>(type: "integer", nullable: false),
-                    DateAjout = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    DateAjout = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    Placement = table.Column<int>(type: "integer", nullable: true),
                     VerifieurId = table.Column<int>(type: "integer", nullable: false),
                     PublisherId = table.Column<int>(type: "integer", nullable: false),
                     RatingId = table.Column<int>(type: "integer", nullable: false)

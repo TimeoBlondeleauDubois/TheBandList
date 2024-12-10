@@ -62,7 +62,7 @@ namespace TheBandListApplication.Views
 
         private void AjouterDifficulteClick(object sender, RoutedEventArgs e)
         {
-            string nomDifficulte = NomDifficulteTextBox.Text.Trim().ToLower();
+            string nomDifficulte = NomDifficulteTextBox.Text.Trim();
 
             if (string.IsNullOrEmpty(nomDifficulte))
             {
@@ -111,7 +111,7 @@ namespace TheBandListApplication.Views
         {
             if (DifficulteSelectionnee != null)
             {
-                string nouveauNom = NomDifficulteTextBox.Text.Trim().ToLower();
+                string nouveauNom = NomDifficulteTextBox.Text.Trim();
 
                 if (string.IsNullOrEmpty(nouveauNom))
                 {

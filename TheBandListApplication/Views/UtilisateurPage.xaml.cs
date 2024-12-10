@@ -53,7 +53,7 @@ namespace TheBandListApplication.Views
 
         private void AjouterUnUtilisateurClick(object sender, RoutedEventArgs e)
         {
-            string nomUtilisateur = NomUtilisateurTextBox.Text.Trim().ToLower();
+            string nomUtilisateur = NomUtilisateurTextBox.Text.Trim();
 
             if (string.IsNullOrEmpty(nomUtilisateur))
             {
@@ -100,7 +100,7 @@ namespace TheBandListApplication.Views
         {
             if (UtilisateurSelectionne != null)
             {
-                string nouveauNom = NomUtilisateurTextBox.Text.Trim().ToLower();
+                string nouveauNom = NomUtilisateurTextBox.Text.Trim();
 
                 if (string.IsNullOrEmpty(nouveauNom))
                 {

@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TheBandListApplication"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="The Band List Admin">
     <Grid>
         <TabControl>
             <TabItem Header="Utilisateur">
@@ -16,6 +16,9 @@
             </TabItem>
             <TabItem Header="Niveau">
                 <Frame Source="/Views/NiveauPage.xaml"/>
+            </TabItem>
+            <TabItem Header="Classement">
+                <Frame Source="/Views/ClassementPage.xaml"/>
             </TabItem>
         </TabControl>
     </Grid>

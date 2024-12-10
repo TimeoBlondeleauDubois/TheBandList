@@ -12,8 +12,8 @@ using TheBandListApplication.Data;
 namespace TheBandListApplication.Migrations
 {
     [DbContext(typeof(TheBandListDbContext))]
-    [Migration("20241208003130_Db")]
-    partial class Db
+    [Migration("20241210081656_db")]
+    partial class db
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -99,7 +99,7 @@ namespace TheBandListApplication.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("DateAjout")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<int>("Duree")
                         .HasColumnType("integer");
@@ -119,6 +119,9 @@ namespace TheBandListApplication.Migrations
                     b.Property<string>("Nom")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int?>("Placement")
+                        .HasColumnType("integer");
 
                     b.Property<int>("PublisherId")
                         .HasColumnType("integer");
@@ -228,7 +231,7 @@ namespace TheBandListApplication.Migrations
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("DateReussite")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.HasKey("UtilisateurId", "PackId");
 

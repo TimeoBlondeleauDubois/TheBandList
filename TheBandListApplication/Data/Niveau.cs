@@ -19,6 +19,7 @@ namespace TheBandListApplication.Data
         public string Miniature { get; set; }
         public int Duree { get; set; }
         public DateTime DateAjout { get; set; }
+        public int? Placement { get; set; }
 
         [ForeignKey("VerifieurId")]
         public int VerifieurId { get; set; }
