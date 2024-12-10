@@ -37,7 +37,7 @@
             <Button x:Name="MiniatureSelectionButton" Content="Choisir une image" Click="MiniatureSelectionButtonClick" Margin="0,5,0,0"/>
             <Image x:Name="SelectedMiniaturePreview" Width="200" Height="150" Stretch="Uniform" Visibility="Collapsed" Margin="0,10,0,0"/>
 
-            <TextBlock Text="URL de vérification :" Margin="0,10,0,0"/>
+            <TextBlock Text="URL de vérification (embed) :" Margin="0,10,0,0"/>
             <TextBox x:Name="UrlVerificationTextBox" Width="200" />
 
             <TextBlock Text="Vérificateur :" Margin="0,10,0,0"/>

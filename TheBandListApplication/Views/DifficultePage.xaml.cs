@@ -422,6 +422,10 @@ namespace TheBandListApplication.Views
             {
                 FeatureSelectionnee = null;
                 ResetFormulaire();
+                AjouterFeatureButton.Visibility = Visibility.Visible;
+                ModifierFeatureButton.Visibility = Visibility.Collapsed;
+                SupprimerFeatureButton.Visibility = Visibility.Collapsed;
+                AnnulerFeatureModificationButton.Visibility = Visibility.Collapsed;
             }
         }
 
