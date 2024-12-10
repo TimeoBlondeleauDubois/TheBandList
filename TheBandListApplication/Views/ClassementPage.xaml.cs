@@ -54,7 +54,6 @@ namespace TheBandListApplication.Views
             }
         }
 
-
         private void OnValidateClick(object sender, RoutedEventArgs e)
         {
             if (DataGridClassements.CommitEdit(DataGridEditingUnit.Row, true) == false)
@@ -87,23 +86,62 @@ namespace TheBandListApplication.Views
                         .Select((c, index) =>
                         {
                             c.ClassementPosition = index + 1;
-                            c.Points = CalculerPoints(c.ClassementPosition);
+                            c.Points = CalculerPoints(c.ClassementPosition, allClassements.Count);
                             return c;
                         })
                         .ToList();
 
                     context.Classements.UpdateRange(reorderedClassements);
                     context.SaveChanges();
-
+                    RecalculerPoints();
                     ClassementPageLoaded(this, null);
                     SetMessage($"Classement mis à jour pour le niveau {updatedClassement.Niveau.Nom}.", Colors.Green);
                 }
             }
         }
 
-        private int CalculerPoints(int classementPosition)
+        private int CalculerPoints(int classementPosition, int totalNiveaux)
         {
-            return 1;
+            if (totalNiveaux <= 1) return 1000;
+
+            double pointsTop1 = 1000;
+
+            double decayFactor = 0.9;
+            double minPoint = 1;
+
+            double points = pointsTop1 * Math.Pow(decayFactor, classementPosition - 1);
+
+            double adjustmentFactor = 1 + ((totalNiveaux - 1) * 0.002);
+            points *= adjustmentFactor;
+
+            points = Math.Max(minPoint, points);
+
+            return (int)Math.Round(points);
+        }
+
+        private void RecalculerPoints()
+        {
+            using (var context = new TheBandListDbContext())
+            {
+                var classements = context.Classements
+                    .Include(c => c.Niveau)
+                    .Where(c => c.ClassementPosition > 0)
+                    .OrderBy(c => c.ClassementPosition)
+                    .ToList();
+
+                int totalNiveaux = classements.Count;
+
+                foreach (var classement in classements)
+                {
+                    classement.Points = CalculerPoints(classement.ClassementPosition, totalNiveaux);
+                }
+
+                context.Classements.UpdateRange(classements);
+                context.SaveChanges();
+            }
+
+            LoadDataGrid();
+            SetMessage("Les points ont été recalculés pour tous les niveaux.", Colors.Green);
         }
 
         private void SetMessage(string message, Color color)
@@ -139,7 +177,7 @@ namespace TheBandListApplication.Views
                     foreach (var classement in allClassements.Where(c => c.ClassementPosition >= nouvellePosition))
                     {
                         classement.ClassementPosition++;
-                        classement.Points = CalculerPoints(classement.ClassementPosition);
+                        classement.Points = CalculerPoints(classement.ClassementPosition, allClassements.Count);
                         context.Entry(classement).State = EntityState.Modified;
                     }
 
@@ -147,14 +185,15 @@ namespace TheBandListApplication.Views
                     {
                         NiveauId = selectedNiveau.Id,
                         ClassementPosition = nouvellePosition,
-                        Points = CalculerPoints(nouvellePosition)
+                        Points = CalculerPoints(nouvellePosition, allClassements.Count)
                     };
 
                     context.Classements.Add(classementToAdd);
                     context.SaveChanges();
-
+                    RecalculerPoints();
+                    ClassementPageLoaded(this, null);
+                    SetMessage($"Classement mis à jour pour le niveau {selectedNiveau.Nom}.", Colors.Green);
                     LoadDataGrid();
-                    SetMessage($"Placement attribué au niveau {selectedNiveau.Nom}.", Colors.Green);
                 }
             }
         }

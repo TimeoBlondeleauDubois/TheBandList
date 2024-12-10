@@ -46,5 +46,4 @@
 
         <TextBlock x:Name="StatusMessage" Margin="10,500,10,10" HorizontalAlignment="Center" FontWeight="Bold" TextAlignment="Center" FontSize="14" />
     </Grid>
-
 </Page>
