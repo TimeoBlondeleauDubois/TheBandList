@@ -13,13 +13,16 @@
 
     <div class="mb-3">
         <label for="nomNiveau" class="form-label">Nom du niveau</label>
-        <InputText id="nomNiveau" class="form-control" @bind-Value="newSubmission.NomNiveau" @oninput="OnNiveauInput" />
+        <InputText id="nomNiveau" class="form-control" @bind-Value="newSubmission.NomNiveau" @onkeydown="HandleKeyDownNiveau" @oninput="OnNiveauInput" @onblur="HandleFocusOutNiveau" @onfocus="OnFocusNiveau" />
         <ul class="list-group">
             @if (niveauSuggestions.Any())
             {
-                @foreach (var suggestion in niveauSuggestions)
+                @foreach (var suggestion in niveauSuggestions.Select((value, index) => new { value, index }))
                 {
-                    <li class="list-group-item" @onclick="(() => SelectNiveau(suggestion))">@suggestion</li>
+                    <li class="list-group-item @(selectedNiveauIndex == suggestion.index ? "active" : "")"
+                        @onclick="(() => SelectNiveau(suggestion.value))">
+                        @suggestion.value
+                    </li>
                 }
             }
         </ul>
@@ -27,13 +30,16 @@
 
     <div class="mb-3">
         <label for="nomUtilisateur" class="form-label">Nom d'utilisateur</label>
-        <InputText id="nomUtilisateur" class="form-control" @bind-Value="newSubmission.NomUtilisateur" @oninput="OnUtilisateurInput" />
+        <InputText id="nomUtilisateur" class="form-control" @bind-Value="newSubmission.NomUtilisateur" @onkeydown="HandleKeyDownUtilisateur" @oninput="OnUtilisateurInput" @onblur="HandleFocusOutUtilisateur" @onfocus="OnFocusUtilisateur" />
         <ul class="list-group">
             @if (utilisateurSuggestions.Any())
             {
-                @foreach (var suggestion in utilisateurSuggestions)
+                @foreach (var suggestion in utilisateurSuggestions.Select((value, index) => new { value, index }))
                 {
-                    <li class="list-group-item" @onclick="(() => SelectUtilisateur(suggestion))">@suggestion</li>
+                    <li class="list-group-item @(selectedUtilisateurIndex == suggestion.index ? "active" : "")"
+                        @onclick="(() => SelectUtilisateur(suggestion.value))">
+                        @suggestion.value
+                    </li>
                 }
             }
         </ul>
@@ -65,36 +71,105 @@
     private List<string> niveauSuggestions = new();
     private List<string> utilisateurSuggestions = new();
 
+    private int selectedNiveauIndex = -1;
+    private int selectedUtilisateurIndex = -1;
+
     private async Task OnNiveauInput(ChangeEventArgs e)
     {
-        string input = e.Value.ToString().ToLower();
-        niveauSuggestions = await _context.Niveaux
-            .Where(n => n.Nom.ToLower().Contains(input))
-            .Select(n => n.Nom)
-            .Take(5)
-            .ToListAsync();
+        string input = e.Value?.ToString().ToLower() ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            niveauSuggestions.Clear();
+            StateHasChanged();
+            selectedNiveauIndex = -1;
+        }
+        else
+        {
+            niveauSuggestions = await _context.Niveaux
+                .Where(n => n.Nom.ToLower().Contains(input))
+                .Select(n => n.Nom)
+                .Take(5)
+                .ToListAsync();
+        }
+
+        StateHasChanged();
     }
 
     private async Task OnUtilisateurInput(ChangeEventArgs e)
     {
-        string input = e.Value.ToString().ToLower();
-        utilisateurSuggestions = await _context.Utilisateurs
-            .Where(u => u.Nom.ToLower().Contains(input))
-            .Select(u => u.Nom)
-            .Take(5)
-            .ToListAsync();
+        string input = e.Value?.ToString().ToLower() ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            utilisateurSuggestions.Clear();
+            StateHasChanged();
+            selectedUtilisateurIndex = -1;
+        }
+        else
+        {
+            utilisateurSuggestions = await _context.Utilisateurs
+                .Where(u => u.Nom.ToLower().Contains(input))
+                .Select(u => u.Nom)
+                .Take(5)
+                .ToListAsync();
+        }
+
+        StateHasChanged();
+    }
+
+    private void HandleKeyDownNiveau(KeyboardEventArgs e)
+    {
+        if (niveauSuggestions.Any())
+        {
+            if (e.Key == "ArrowDown")
+            {
+                selectedNiveauIndex = (selectedNiveauIndex + 1) % niveauSuggestions.Count;
+            }
+            else if (e.Key == "ArrowUp")
+            {
+                selectedNiveauIndex = (selectedNiveauIndex - 1 + niveauSuggestions.Count) % niveauSuggestions.Count;
+            }
+            else if (e.Key == "Enter" && selectedNiveauIndex >= 0)
+            {
+                SelectNiveau(niveauSuggestions[selectedNiveauIndex]);
+            }
+        }
+    }
+
+    private void HandleKeyDownUtilisateur(KeyboardEventArgs e)
+    {
+        if (utilisateurSuggestions.Any())
+        {
+            if (e.Key == "ArrowDown")
+            {
+                selectedUtilisateurIndex = (selectedUtilisateurIndex + 1) % utilisateurSuggestions.Count;
+            }
+            else if (e.Key == "ArrowUp")
+            {
+                selectedUtilisateurIndex = (selectedUtilisateurIndex - 1 + utilisateurSuggestions.Count) % utilisateurSuggestions.Count;
+            }
+            else if (e.Key == "Enter" && selectedUtilisateurIndex >= 0)
+            {
+                SelectUtilisateur(utilisateurSuggestions[selectedUtilisateurIndex]);
+            }
+        }
     }
 
     private void SelectNiveau(string nomNiveau)
     {
         newSubmission.NomNiveau = nomNiveau;
         niveauSuggestions.Clear();
+        selectedNiveauIndex = -1;
+        StateHasChanged();
     }
 
     private void SelectUtilisateur(string nomUtilisateur)
     {
         newSubmission.NomUtilisateur = nomUtilisateur;
         utilisateurSuggestions.Clear();
+        selectedUtilisateurIndex = -1;
+        StateHasChanged();
     }
 
     private void ValidateAndSubmit()
@@ -149,4 +224,61 @@
             StateHasChanged();
         }
     }
+
+    private void HandleFocusOutNiveau(FocusEventArgs e)
+    {
+        Task.Delay(100).ContinueWith(_ =>
+        {
+            niveauSuggestions.Clear();
+            selectedNiveauIndex = -1;
+            InvokeAsync(StateHasChanged);
+        });
+    }
+
+
+    private void HandleFocusOutUtilisateur(FocusEventArgs e)
+    {
+        Task.Delay(100).ContinueWith(_ =>
+        {
+            utilisateurSuggestions.Clear();
+            selectedUtilisateurIndex = -1;
+            InvokeAsync(StateHasChanged);
+        });
+    }
+
+    private async void OnFocusNiveau(FocusEventArgs e)
+    {
+        if (!string.IsNullOrWhiteSpace(newSubmission.NomNiveau))
+        {
+            niveauSuggestions = await _context.Niveaux
+                .Where(n => n.Nom.ToLower().Contains(newSubmission.NomNiveau.ToLower()))
+                .Select(n => n.Nom)
+                .Take(5)
+                .ToListAsync();
+
+            StateHasChanged();
+        }
+    }
+
+    private async void OnFocusUtilisateur(FocusEventArgs e)
+    {
+        if (!string.IsNullOrWhiteSpace(newSubmission.NomUtilisateur))
+        {
+            utilisateurSuggestions = await _context.Utilisateurs
+                .Where(u => u.Nom.ToLower().Contains(newSubmission.NomUtilisateur.ToLower()))
+                .Select(u => u.Nom)
+                .Take(5)
+                .ToListAsync();
+
+            StateHasChanged();
+        }
+    }
+
 }
+
+<style>
+    .list-group-item.active {
+        background-color: #007bff;
+        color: white;
+    }
+</style>
