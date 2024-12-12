@@ -1,4 +1,5 @@
 ﻿@page "/envoyerunevideo"
+@using Microsoft.EntityFrameworkCore
 @using TheBandList.Data
 @using Microsoft.AspNetCore.Components.Forms
 @inject TheBandListDbContext _context
@@ -12,12 +13,30 @@
 
     <div class="mb-3">
         <label for="nomNiveau" class="form-label">Nom du niveau</label>
-        <InputText id="nomNiveau" class="form-control" @bind-Value="newSubmission.NomNiveau" />
+        <InputText id="nomNiveau" class="form-control" @bind-Value="newSubmission.NomNiveau" @oninput="OnNiveauInput" />
+        <ul class="list-group">
+            @if (niveauSuggestions.Any())
+            {
+                @foreach (var suggestion in niveauSuggestions)
+                {
+                    <li class="list-group-item" @onclick="(() => SelectNiveau(suggestion))">@suggestion</li>
+                }
+            }
+        </ul>
     </div>
 
     <div class="mb-3">
         <label for="nomUtilisateur" class="form-label">Nom d'utilisateur</label>
-        <InputText id="nomUtilisateur" class="form-control" @bind-Value="newSubmission.NomUtilisateur" />
+        <InputText id="nomUtilisateur" class="form-control" @bind-Value="newSubmission.NomUtilisateur" @oninput="OnUtilisateurInput" />
+        <ul class="list-group">
+            @if (utilisateurSuggestions.Any())
+            {
+                @foreach (var suggestion in utilisateurSuggestions)
+                {
+                    <li class="list-group-item" @onclick="(() => SelectUtilisateur(suggestion))">@suggestion</li>
+                }
+            }
+        </ul>
     </div>
 
     <div class="mb-3">
@@ -42,6 +61,41 @@
     private SoumissionNiveau newSubmission = new SoumissionNiveau();
     private string errorMessage;
     private bool submissionSuccess;
+
+    private List<string> niveauSuggestions = new();
+    private List<string> utilisateurSuggestions = new();
+
+    private async Task OnNiveauInput(ChangeEventArgs e)
+    {
+        string input = e.Value.ToString().ToLower();
+        niveauSuggestions = await _context.Niveaux
+            .Where(n => n.Nom.ToLower().Contains(input))
+            .Select(n => n.Nom)
+            .Take(5)
+            .ToListAsync();
+    }
+
+    private async Task OnUtilisateurInput(ChangeEventArgs e)
+    {
+        string input = e.Value.ToString().ToLower();
+        utilisateurSuggestions = await _context.Utilisateurs
+            .Where(u => u.Nom.ToLower().Contains(input))
+            .Select(u => u.Nom)
+            .Take(5)
+            .ToListAsync();
+    }
+
+    private void SelectNiveau(string nomNiveau)
+    {
+        newSubmission.NomNiveau = nomNiveau;
+        niveauSuggestions.Clear();
+    }
+
+    private void SelectUtilisateur(string nomUtilisateur)
+    {
+        newSubmission.NomUtilisateur = nomUtilisateur;
+        utilisateurSuggestions.Clear();
+    }
 
     private void ValidateAndSubmit()
     {
