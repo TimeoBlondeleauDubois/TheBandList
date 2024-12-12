@@ -1,0 +1,28 @@
+﻿@page "/inputquimarche"
+@using TheBandList.Data
+@using Microsoft.EntityFrameworkCore
+@inject TheBandListDbContext _context
+
+<PageTitle>Soumettre un niveau</PageTitle>
+
+<h3>Liste des Niveaux</h3>
+
+<h3>Entrer un texte</h3>
+
+<input @bind="inputValue" @oninput="OnInputChange" placeholder="Entrez quelque chose..." />
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <p>@message</p>
+}
+
+@code {
+    private string inputValue;
+    private string message;
+
+    private void OnInputChange(ChangeEventArgs e)
+    {
+        inputValue = e.Value?.ToString();
+        message = $"Vous avez entré : {inputValue}";
+    }
+}

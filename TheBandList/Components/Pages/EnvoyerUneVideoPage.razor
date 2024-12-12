@@ -1,0 +1,98 @@
+﻿@page "/envoyerunevideo"
+@using TheBandList.Data
+@using Microsoft.AspNetCore.Components.Forms
+@inject TheBandListDbContext _context
+
+<PageTitle>Soumettre un niveau</PageTitle>
+
+<h3>Soumettre un niveau</h3>
+
+<EditForm Model="newSubmission">
+    <DataAnnotationsValidator />
+
+    <div class="mb-3">
+        <label for="nomNiveau" class="form-label">Nom du niveau</label>
+        <InputText id="nomNiveau" class="form-control" @bind-Value="newSubmission.NomNiveau" />
+    </div>
+
+    <div class="mb-3">
+        <label for="nomUtilisateur" class="form-label">Nom d'utilisateur</label>
+        <InputText id="nomUtilisateur" class="form-control" @bind-Value="newSubmission.NomUtilisateur" />
+    </div>
+
+    <div class="mb-3">
+        <label for="urlVideo" class="form-label">URL de la vidéo</label>
+        <InputText id="urlVideo" class="form-control" @bind-Value="newSubmission.UrlVideo" />
+    </div>
+
+    <button type="button" class="btn btn-primary" @onclick="ValidateAndSubmit">Soumettre</button>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="text-danger mt-2">@errorMessage</div>
+    }
+
+    @if (submissionSuccess)
+    {
+        <div class="text-success mt-2">Soumission réussie !</div>
+    }
+</EditForm>
+
+@code {
+    private SoumissionNiveau newSubmission = new SoumissionNiveau();
+    private string errorMessage;
+    private bool submissionSuccess;
+
+    private void ValidateAndSubmit()
+    {
+        if (string.IsNullOrWhiteSpace(newSubmission.NomNiveau))
+        {
+            errorMessage = "Veuillez remplir le champ : Nom du niveau.";
+            submissionSuccess = false;
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(newSubmission.NomUtilisateur))
+        {
+            errorMessage = "Veuillez remplir le champ : Nom d'utilisateur.";
+            submissionSuccess = false;
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(newSubmission.UrlVideo))
+        {
+            errorMessage = "Veuillez remplir le champ : URL de la vidéo.";
+            submissionSuccess = false;
+            return;
+        }
+
+        errorMessage = string.Empty;
+        submissionSuccess = false;
+
+        _ = HandleValidSubmit();
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            newSubmission.DateSoumission = DateTime.Now;
+            newSubmission.Statut = "pending";
+
+            _context.SoumissionsNiveaux.Add(newSubmission);
+            await _context.SaveChangesAsync();
+
+            newSubmission = new SoumissionNiveau();
+            submissionSuccess = true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur lors de la soumission : {ex.Message}");
+            submissionSuccess = false;
+        }
+        finally
+        {
+            StateHasChanged();
+        }
+    }
+}

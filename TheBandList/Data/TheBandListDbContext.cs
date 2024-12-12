@@ -20,6 +20,7 @@ namespace TheBandList.Data
         public DbSet<Classement> Classements { get; set; }
         public DbSet<CreateurNiveau> CreateursNiveaux { get; set; }
         public DbSet<ReussiteNiveau> ReussitesNiveaux { get; set; }
+        public DbSet<SoumissionNiveau> SoumissionsNiveaux { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

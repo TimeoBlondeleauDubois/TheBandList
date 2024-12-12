@@ -13,6 +13,7 @@ string dbUsername = Environment.GetEnvironmentVariable("DB_USERNAME") ?? "postgr
 string dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "password";
 string dbName = Environment.GetEnvironmentVariable("DB_NAME") ?? "database";
 
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 string connectionString = $"Host={dbHost};Port={dbPort};Username={dbUsername};Password={dbPassword};Database={dbName}";
 builder.Services.AddDbContext<TheBandListDbContext>(options =>
     options.UseNpgsql(connectionString));

@@ -3,7 +3,7 @@ using TheBandListApplication.Data;
 
 namespace TheBandList.Components.Pages
 {
-    public partial class Home
+    public partial class HomePage
     {
         private List<Niveau> niveaux;
         private List<Classement> classements;

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TheBandListApplication.Data;
@@ -11,9 +12,11 @@ using TheBandListApplication.Data;
 namespace TheBandListApplication.Migrations
 {
     [DbContext(typeof(TheBandListDbContext))]
-    partial class TheBandListDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241211082552_db2")]
+    partial class db2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -252,10 +255,6 @@ namespace TheBandListApplication.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("NomUtilisateur")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("Statut")
                         .IsRequired()
                         .HasColumnType("text");
@@ -263,6 +262,9 @@ namespace TheBandListApplication.Migrations
                     b.Property<string>("UrlVideo")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int>("UtilisateurId")
+                        .HasColumnType("integer");
 
                     b.HasKey("IdSoumission");
 

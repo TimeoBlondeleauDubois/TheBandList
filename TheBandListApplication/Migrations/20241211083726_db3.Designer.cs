@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TheBandListApplication.Data;
@@ -11,9 +12,11 @@ using TheBandListApplication.Data;
 namespace TheBandListApplication.Migrations
 {
     [DbContext(typeof(TheBandListDbContext))]
-    partial class TheBandListDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241211083726_db3")]
+    partial class db3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

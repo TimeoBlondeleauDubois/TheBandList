@@ -18,6 +18,6 @@ namespace TheBandListApplication.Data
         public virtual Niveau Niveau { get; set; }
 
         public string Video { get; set; } 
-        public string Statut { get; set; } 
+        public string Statut { get; set; }
     }
 }
