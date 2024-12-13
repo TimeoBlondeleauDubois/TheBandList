@@ -40,6 +40,23 @@ namespace TheBandListApplication.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "SoumissionsNiveaux",
+                columns: table => new
+                {
+                    IdSoumission = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    NomNiveau = table.Column<string>(type: "text", nullable: false),
+                    UrlVideo = table.Column<string>(type: "text", nullable: false),
+                    NomUtilisateur = table.Column<string>(type: "text", nullable: false),
+                    Statut = table.Column<string>(type: "text", nullable: false),
+                    DateSoumission = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SoumissionsNiveaux", x => x.IdSoumission);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Utilisateurs",
                 columns: table => new
                 {
@@ -297,6 +314,9 @@ namespace TheBandListApplication.Migrations
 
             migrationBuilder.DropTable(
                 name: "ReussitesPack");
+
+            migrationBuilder.DropTable(
+                name: "SoumissionsNiveaux");
 
             migrationBuilder.DropTable(
                 name: "Niveaux");

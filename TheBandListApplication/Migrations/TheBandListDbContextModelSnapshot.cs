@@ -256,10 +256,6 @@ namespace TheBandListApplication.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Statut")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("UrlVideo")
                         .IsRequired()
                         .HasColumnType("text");

@@ -26,7 +26,9 @@ namespace TheBandListApplication.Views
 
         private void LoadSoumissions()
         {
-            var soumissions = _dbContext.SoumissionsNiveaux.ToList();
+            var soumissions = _dbContext.SoumissionsNiveaux
+                .OrderBy(s => s.DateSoumission)
+                .ToList();
             SoumissionListView.ItemsSource = soumissions;
         }
 
@@ -48,29 +50,51 @@ namespace TheBandListApplication.Views
             var niveauExiste = _dbContext.Niveaux
                 .Any(n => n.Nom.ToLower() == NomNiveauTextBox.Text.ToLower());
             NomNiveauTextBox.IsReadOnly = niveauExiste;
+            EditNomNiveauButton.IsEnabled = niveauExiste;
 
             var utilisateurExiste = _dbContext.Utilisateurs
                 .Any(u => u.Nom.ToLower() == NomUtilisateurTextBox.Text.ToLower());
             NomUtilisateurTextBox.IsReadOnly = utilisateurExiste;
+            EditNomUtilisateurButton.IsEnabled = utilisateurExiste;
         }
 
         private void NomNiveauTextBox_LostFocus(object sender, RoutedEventArgs e)
         {
             var niveauExiste = _dbContext.Niveaux
                 .Any(n => n.Nom.ToLower() == NomNiveauTextBox.Text.ToLower());
-            if (niveauExiste)
-            {
-                NomNiveauTextBox.IsReadOnly = true;
-            }
+            NomNiveauTextBox.IsReadOnly = niveauExiste;
+            EditNomNiveauButton.IsEnabled = niveauExiste;
         }
 
         private void NomUtilisateurTextBox_LostFocus(object sender, RoutedEventArgs e)
         {
             var utilisateurExiste = _dbContext.Utilisateurs
                 .Any(u => u.Nom.ToLower() == NomUtilisateurTextBox.Text.ToLower());
-            if (utilisateurExiste)
+            NomUtilisateurTextBox.IsReadOnly = utilisateurExiste;
+            EditNomUtilisateurButton.IsEnabled = utilisateurExiste;
+        }
+
+        private void EditNomNiveauButton_Click(object sender, RoutedEventArgs e)
+        {
+            NomNiveauTextBox.IsReadOnly = false;
+            NomNiveauTextBox.Clear();
+            EditNomNiveauButton.IsEnabled = false;
+        }
+
+        private void EditNomUtilisateurButton_Click(object sender, RoutedEventArgs e)
+        {
+            NomUtilisateurTextBox.IsReadOnly = false;
+            NomUtilisateurTextBox.Clear();
+            EditNomUtilisateurButton.IsEnabled = false;
+        }
+
+        private void TextBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == System.Windows.Input.Key.Enter)
             {
-                NomUtilisateurTextBox.IsReadOnly = true;
+                var currentTextBox = sender as TextBox;
+
+                currentTextBox?.MoveFocus(new System.Windows.Input.TraversalRequest(System.Windows.Input.FocusNavigationDirection.Next));
             }
         }
 
@@ -80,7 +104,18 @@ namespace TheBandListApplication.Views
                 string.IsNullOrWhiteSpace(NomUtilisateurTextBox.Text) ||
                 string.IsNullOrWhiteSpace(UrlVideoTextBox.Text))
             {
-                ErrorTextBlock.Text = "Tous les champs doivent être remplis avant de sauvegarder.";
+                if (string.IsNullOrWhiteSpace(NomNiveauTextBox.Text))
+                {
+                    ErrorTextBlock.Text = "Le nom du niveau doit être rempli.";
+                }
+                else if (string.IsNullOrWhiteSpace(NomUtilisateurTextBox.Text))
+                {
+                    ErrorTextBlock.Text = "Le nom de l'utilisateur doit être rempli.";
+                }
+                else if (string.IsNullOrWhiteSpace(UrlVideoTextBox.Text))
+                {
+                    ErrorTextBlock.Text = "Le champ url de la vidéo doit être rempli.";
+                }
                 return;
             }
 
@@ -91,9 +126,14 @@ namespace TheBandListApplication.Views
                 var niveau = _dbContext.Niveaux
                     .FirstOrDefault(n => n.Nom.ToLower() == NomNiveauTextBox.Text.ToLower());
 
-                if (utilisateur == null || niveau == null)
+                if (utilisateur == null)
                 {
-                    ErrorTextBlock.Text = "Le niveau ou l'utilisateur n'existe pas dans la base de données.";
+                    ErrorTextBlock.Text = "L'utilisateur n'existe pas dans la base de données.";
+                    return;
+                }
+                else if (niveau == null)
+                {
+                    ErrorTextBlock.Text = "Le niveau n'existe pas dans la base de données.";
                     return;
                 }
 

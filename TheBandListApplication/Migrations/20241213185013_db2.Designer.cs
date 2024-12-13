@@ -12,7 +12,7 @@ using TheBandListApplication.Data;
 namespace TheBandListApplication.Migrations
 {
     [DbContext(typeof(TheBandListDbContext))]
-    [Migration("20241211082552_db2")]
+    [Migration("20241213185013_db2")]
     partial class db2
     {
         /// <inheritdoc />
@@ -255,16 +255,13 @@ namespace TheBandListApplication.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Statut")
+                    b.Property<string>("NomUtilisateur")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("UrlVideo")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<int>("UtilisateurId")
-                        .HasColumnType("integer");
 
                     b.HasKey("IdSoumission");
 

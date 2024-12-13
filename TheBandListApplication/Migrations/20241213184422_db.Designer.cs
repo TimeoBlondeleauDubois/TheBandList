@@ -12,8 +12,8 @@ using TheBandListApplication.Data;
 namespace TheBandListApplication.Migrations
 {
     [DbContext(typeof(TheBandListDbContext))]
-    [Migration("20241211083726_db3")]
-    partial class db3
+    [Migration("20241213184422_db")]
+    partial class db
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

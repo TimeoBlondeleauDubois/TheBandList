@@ -74,48 +74,72 @@
     private int selectedNiveauIndex = -1;
     private int selectedUtilisateurIndex = -1;
 
+    private CancellationTokenSource debounceNiveauToken;
     private async Task OnNiveauInput(ChangeEventArgs e)
     {
-        string input = e.Value?.ToString().ToLower() ?? string.Empty;
+        debounceNiveauToken?.Cancel();
+        debounceNiveauToken = new CancellationTokenSource();
+        var token = debounceNiveauToken.Token;
 
+        string input = e.Value?.ToString().ToLower() ?? string.Empty;
         if (string.IsNullOrWhiteSpace(input))
         {
             niveauSuggestions.Clear();
             StateHasChanged();
-            selectedNiveauIndex = -1;
-        }
-        else
-        {
-            niveauSuggestions = await _context.Niveaux
-                .Where(n => n.Nom.ToLower().Contains(input))
-                .Select(n => n.Nom)
-                .Take(5)
-                .ToListAsync();
+            return;
         }
 
-        StateHasChanged();
+        try
+        {
+            await Task.Delay(100, token);
+            if (!token.IsCancellationRequested)
+            {
+                niveauSuggestions = await _context.Niveaux
+                    .Where(n => n.Nom.ToLower().Contains(input))
+                    .Select(n => n.Nom)
+                    .Take(5)
+                    .ToListAsync();
+                StateHasChanged();
+            }
+        }
+        catch (TaskCanceledException)
+        {
+
+        }
     }
 
+    private CancellationTokenSource debounceUtilisateurToken;
     private async Task OnUtilisateurInput(ChangeEventArgs e)
     {
-        string input = e.Value?.ToString().ToLower() ?? string.Empty;
+        debounceUtilisateurToken?.Cancel();
+        debounceUtilisateurToken = new CancellationTokenSource();
+        var token = debounceUtilisateurToken.Token;
 
+        string input = e.Value?.ToString().ToLower() ?? string.Empty;
         if (string.IsNullOrWhiteSpace(input))
         {
             utilisateurSuggestions.Clear();
             StateHasChanged();
             selectedUtilisateurIndex = -1;
-        }
-        else
-        {
-            utilisateurSuggestions = await _context.Utilisateurs
-                .Where(u => u.Nom.ToLower().Contains(input))
-                .Select(u => u.Nom)
-                .Take(5)
-                .ToListAsync();
+            return;
         }
 
-        StateHasChanged();
+        try
+        {
+            await Task.Delay(300, token);
+            if (!token.IsCancellationRequested)
+            {
+                utilisateurSuggestions = await _context.Utilisateurs
+                    .Where(u => u.Nom.ToLower().Contains(input))
+                    .Select(u => u.Nom)
+                    .Take(5)
+                    .ToListAsync();
+                StateHasChanged();
+            }
+        }
+        catch (TaskCanceledException)
+        {
+        }
     }
 
     private void HandleKeyDownNiveau(KeyboardEventArgs e)
@@ -206,7 +230,6 @@
         try
         {
             newSubmission.DateSoumission = DateTime.Now;
-            newSubmission.Statut = "pending";
 
             _context.SoumissionsNiveaux.Add(newSubmission);
             await _context.SaveChangesAsync();
