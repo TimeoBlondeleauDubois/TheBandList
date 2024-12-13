@@ -10,12 +10,10 @@ namespace TheBandListApplication.Views
 {
     public partial class SubmissionPage : Page
     {
-        private readonly TheBandListDbContext _dbContext;
-
         public SubmissionPage()
         {
+            this.DataContext = this;
             InitializeComponent();
-            _dbContext = new TheBandListDbContext();
         }
 
         private void SubmissionPageLoaded(object sender, RoutedEventArgs e)
@@ -26,10 +24,13 @@ namespace TheBandListApplication.Views
 
         private void LoadSoumissions()
         {
-            var soumissions = _dbContext.SoumissionsNiveaux
+            using (var context = new TheBandListDbContext())
+            {
+                var soumissions = context.SoumissionsNiveaux
                 .OrderBy(s => s.DateSoumission)
                 .ToList();
-            SoumissionListView.ItemsSource = soumissions;
+                SoumissionListView.ItemsSource = soumissions;
+            }
         }
 
         private void SoumissionListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -47,31 +48,40 @@ namespace TheBandListApplication.Views
 
         private void VerifierEtVerrouillerChamps()
         {
-            var niveauExiste = _dbContext.Niveaux
+            using (var context = new TheBandListDbContext())
+            {
+                var niveauExiste = context.Niveaux
                 .Any(n => n.Nom.ToLower() == NomNiveauTextBox.Text.ToLower());
-            NomNiveauTextBox.IsReadOnly = niveauExiste;
-            EditNomNiveauButton.IsEnabled = niveauExiste;
+                NomNiveauTextBox.IsReadOnly = niveauExiste;
+                EditNomNiveauButton.IsEnabled = niveauExiste;
 
-            var utilisateurExiste = _dbContext.Utilisateurs
-                .Any(u => u.Nom.ToLower() == NomUtilisateurTextBox.Text.ToLower());
-            NomUtilisateurTextBox.IsReadOnly = utilisateurExiste;
-            EditNomUtilisateurButton.IsEnabled = utilisateurExiste;
+                var utilisateurExiste = context.Utilisateurs
+                    .Any(u => u.Nom.ToLower() == NomUtilisateurTextBox.Text.ToLower());
+                NomUtilisateurTextBox.IsReadOnly = utilisateurExiste;
+                EditNomUtilisateurButton.IsEnabled = utilisateurExiste;
+            }
         }
 
         private void NomNiveauTextBox_LostFocus(object sender, RoutedEventArgs e)
         {
-            var niveauExiste = _dbContext.Niveaux
+            using (var context = new TheBandListDbContext())
+            {
+                var niveauExiste = context.Niveaux
                 .Any(n => n.Nom.ToLower() == NomNiveauTextBox.Text.ToLower());
-            NomNiveauTextBox.IsReadOnly = niveauExiste;
-            EditNomNiveauButton.IsEnabled = niveauExiste;
+                NomNiveauTextBox.IsReadOnly = niveauExiste;
+                EditNomNiveauButton.IsEnabled = niveauExiste;
+            }
         }
 
         private void NomUtilisateurTextBox_LostFocus(object sender, RoutedEventArgs e)
         {
-            var utilisateurExiste = _dbContext.Utilisateurs
+            using (var context = new TheBandListDbContext())
+            {
+                var utilisateurExiste = context.Utilisateurs
                 .Any(u => u.Nom.ToLower() == NomUtilisateurTextBox.Text.ToLower());
-            NomUtilisateurTextBox.IsReadOnly = utilisateurExiste;
-            EditNomUtilisateurButton.IsEnabled = utilisateurExiste;
+                NomUtilisateurTextBox.IsReadOnly = utilisateurExiste;
+                EditNomUtilisateurButton.IsEnabled = utilisateurExiste;
+            }
         }
 
         private void EditNomNiveauButton_Click(object sender, RoutedEventArgs e)
@@ -119,67 +129,72 @@ namespace TheBandListApplication.Views
                 return;
             }
 
-            if (SoumissionListView.SelectedItem is SoumissionNiveau selectedSoumission)
+            using (var context = new TheBandListDbContext())
             {
-                var utilisateur = _dbContext.Utilisateurs
-                    .FirstOrDefault(u => u.Nom.ToLower() == NomUtilisateurTextBox.Text.ToLower());
-                var niveau = _dbContext.Niveaux
-                    .FirstOrDefault(n => n.Nom.ToLower() == NomNiveauTextBox.Text.ToLower());
 
-                if (utilisateur == null)
+                if (SoumissionListView.SelectedItem is SoumissionNiveau selectedSoumission)
                 {
-                    ErrorTextBlock.Text = "L'utilisateur n'existe pas dans la base de données.";
-                    return;
-                }
-                else if (niveau == null)
-                {
-                    ErrorTextBlock.Text = "Le niveau n'existe pas dans la base de données.";
-                    return;
-                }
+                    var utilisateur = context.Utilisateurs
+                        .FirstOrDefault(u => u.Nom.ToLower() == NomUtilisateurTextBox.Text.ToLower());
+                    var niveau = context.Niveaux
+                        .FirstOrDefault(n => n.Nom.ToLower() == NomNiveauTextBox.Text.ToLower());
 
-                var existeReussite = _dbContext.ReussitesNiveaux.Any(r =>
-                    r.UtilisateurId == utilisateur.Id &&
-                    r.NiveauId == niveau.Id);
-
-                if (existeReussite)
-                {
-                    ErrorTextBlock.Text = "Cette réussite existe déjà dans la base de données.";
-                    return;
-                }
-
-                using var transaction = _dbContext.Database.BeginTransaction();
-                try
-                {
-                    var reussite = new ReussiteNiveau
+                    if (utilisateur == null)
                     {
-                        UtilisateurId = utilisateur.Id,
-                        NiveauId = niveau.Id,
-                        Video = UrlVideoTextBox.Text,
-                        Statut = (StatutComboBox.SelectedItem as ComboBoxItem)?.Content.ToString()
-                    };
+                        ErrorTextBlock.Text = "L'utilisateur n'existe pas dans la base de données.";
+                        return;
+                    }
+                    else if (niveau == null)
+                    {
+                        ErrorTextBlock.Text = "Le niveau n'existe pas dans la base de données.";
+                        return;
+                    }
 
-                    _dbContext.ReussitesNiveaux.Add(reussite);
-                    _dbContext.SoumissionsNiveaux.Remove(selectedSoumission);
-                    _dbContext.SaveChanges();
-                    transaction.Commit();
+                    var existeReussite = context.ReussitesNiveaux.Any(r =>
+                        r.UtilisateurId == utilisateur.Id &&
+                        r.NiveauId == niveau.Id);
 
-                    ErrorTextBlock.Foreground = new SolidColorBrush(Colors.Green);
-                    ErrorTextBlock.Text = "La réussite a été enregistrée avec succès.";
-                    LoadSoumissions();
-                    NomNiveauTextBox.Clear();
-                    NomUtilisateurTextBox.Clear();
-                    UrlVideoTextBox.Clear();
-                    StatutComboBox.SelectedIndex = 0;
+                    if (existeReussite)
+                    {
+                        ErrorTextBlock.Text = "Cette réussite existe déjà dans la base de données.";
+                        return;
+                    }
+
+                    using var transaction = context.Database.BeginTransaction();
+                    try
+                    {
+                        var reussite = new ReussiteNiveau
+                        {
+                            UtilisateurId = utilisateur.Id,
+                            NiveauId = niveau.Id,
+                            Video = UrlVideoTextBox.Text,
+                            Statut = (StatutComboBox.SelectedItem as ComboBoxItem)?.Content.ToString()
+                        };
+
+                        context.ReussitesNiveaux.Add(reussite);
+                        context.SoumissionsNiveaux.Remove(selectedSoumission);
+                        context.SaveChanges();
+                        transaction.Commit();
+
+                        ErrorTextBlock.Foreground = new SolidColorBrush(Colors.Green);
+                        ErrorTextBlock.Text = "La réussite a été enregistrée avec succès.";
+                        LoadSoumissions();
+                        NomNiveauTextBox.Clear();
+                        NomUtilisateurTextBox.Clear();
+                        UrlVideoTextBox.Clear();
+                        StatutComboBox.SelectedIndex = 0;
+                    }
+                    catch (Exception ex)
+                    {
+                        transaction.Rollback();
+                        ErrorTextBlock.Text = $"Une erreur est survenue : {ex.Message}";
+                    }
                 }
-                catch (Exception ex)
+
+                else
                 {
-                    transaction.Rollback();
-                    ErrorTextBlock.Text = $"Une erreur est survenue : {ex.Message}";
+                    ErrorTextBlock.Text = "Veuillez sélectionner une soumission.";
                 }
-            }
-            else
-            {
-                ErrorTextBlock.Text = "Veuillez sélectionner une soumission.";
             }
         }
     }
