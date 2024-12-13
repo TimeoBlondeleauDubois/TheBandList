@@ -20,6 +20,9 @@
             <TabItem Header="Classement">
                 <Frame Source="/Views/ClassementPage.xaml"/>
             </TabItem>
+            <TabItem Header="Soumission">
+                <Frame Source="/Views/SubmissionPage.xaml"/>
+            </TabItem>
         </TabControl>
     </Grid>
 </Window>
