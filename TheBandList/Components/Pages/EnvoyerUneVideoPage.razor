@@ -13,7 +13,7 @@
 
     <div class="mb-3">
         <label for="nomNiveau" class="form-label">Nom du niveau</label>
-        <InputText id="nomNiveau" class="form-control" @bind-Value="newSubmission.NomNiveau" @onkeydown="HandleKeyDownNiveau" @oninput="OnNiveauInput" @onblur="HandleFocusOutNiveau" @onfocus="OnFocusNiveau" />
+        <InputText id="nomNiveau" class="form-control" @bind-Value="newSubmission.NomNiveau" @onkeydown="HandleKeyDownNiveau" @oninput="OnNiveauInput" @onblur="HandleFocusOutNiveau" @onfocus="OnFocusNiveau" autocomplete="off" />
         <ul class="list-group">
             @if (niveauSuggestions.Any())
             {
@@ -30,7 +30,7 @@
 
     <div class="mb-3">
         <label for="nomUtilisateur" class="form-label">Nom d'utilisateur</label>
-        <InputText id="nomUtilisateur" class="form-control" @bind-Value="newSubmission.NomUtilisateur" @onkeydown="HandleKeyDownUtilisateur" @oninput="OnUtilisateurInput" @onblur="HandleFocusOutUtilisateur" @onfocus="OnFocusUtilisateur" />
+        <InputText id="nomUtilisateur" class="form-control" @bind-Value="newSubmission.NomUtilisateur" @onkeydown="HandleKeyDownUtilisateur" @oninput="OnUtilisateurInput" @onblur="HandleFocusOutUtilisateur" @onfocus="OnFocusUtilisateur" autocomplete="off" />
         <ul class="list-group">
             @if (utilisateurSuggestions.Any())
             {
@@ -47,7 +47,7 @@
 
     <div class="mb-3">
         <label for="urlVideo" class="form-label">URL de la vidéo</label>
-        <InputText id="urlVideo" class="form-control" @bind-Value="newSubmission.UrlVideo" />
+        <InputText id="urlVideo" class="form-control" @bind-Value="newSubmission.UrlVideo" autocomplete="off" />
     </div>
 
     <button type="button" class="btn btn-primary" @onclick="ValidateAndSubmit">Soumettre</button>
