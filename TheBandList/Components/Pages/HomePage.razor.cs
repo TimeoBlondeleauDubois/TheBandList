@@ -14,11 +14,8 @@ namespace TheBandList.Components.Pages
             try
             {
                 niveaux = await DbContext.Niveaux
-                                          .Include(n => n.Rating)
-                                              .ThenInclude(r => r.DifficulteRate)
-                                          .Include(n => n.Verifieur)
-                                          .Include(n => n.Publisher)
-                                          .ToListAsync();
+                                         .Select(n => new Niveau { Id = n.Id, Nom = n.Nom })
+                                         .ToListAsync();
 
                 classements = await DbContext.Classements
                                              .OrderBy(c => c.ClassementPosition)
@@ -30,9 +27,21 @@ namespace TheBandList.Components.Pages
             }
         }
 
-        private void AfficherDetailsNiveau(int niveauId)
+        private async Task AfficherDetailsNiveau(int niveauId)
         {
-            niveauSelectionne = niveaux?.FirstOrDefault(n => n.Id == niveauId);
+            try
+            {
+                niveauSelectionne = await DbContext.Niveaux
+                                                   .Include(n => n.Rating)
+                                                       .ThenInclude(r => r.DifficulteRate)
+                                                   .Include(n => n.Verifieur)
+                                                   .Include(n => n.Publisher)
+                                                   .FirstOrDefaultAsync(n => n.Id == niveauId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur lors du chargement des détails du niveau: {ex.Message}");
+            }
         }
 
         private string ConvertirDurée(int dureeEnSecondes)

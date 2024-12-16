@@ -20,7 +20,7 @@
                     @foreach (var classement in classements)
                     {
                         var niveau = niveaux.FirstOrDefault(n => n.Id == classement.NiveauId);
-                        <li @onclick="() => AfficherDetailsNiveau(niveau.Id)">
+                        <li @onclick="async () => await AfficherDetailsNiveau(niveau.Id)">
                             @niveau.Nom - Classement: @classement.ClassementPosition
                         </li>
                     }
@@ -106,4 +106,4 @@
             }
         </div>
     </div>
-</div>
+</div>                              

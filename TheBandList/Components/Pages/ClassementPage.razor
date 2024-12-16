@@ -1,4 +1,117 @@
 ﻿@page "/classement"
-@rendermode InteractiveServer
+@inject TheBandListDbContext DbContext
+@using TheBandList.Data
+@using TheBandListApplication.Data
+@using Microsoft.EntityFrameworkCore
 
-<PageTitle>Classement</PageTitle>
+<PageTitle>Classement des utilisateurs</PageTitle>
+
+<div class="container">
+    <div class="row">
+        <div class="col-6">
+            <h3>Classement des utilisateurs</h3>
+            @if (utilisateursAvecPoints == null)
+            {
+                <p>Chargement des classements...</p>
+            }
+            else
+            {
+                <ol>
+                    @foreach (var utilisateur in utilisateursAvecPoints)
+                    {
+                        <li @onclick="() => AfficherDetailsUtilisateur(utilisateur.Id)">
+                            @utilisateur.Nom - @utilisateur.TotalPoints Points
+                        </li>
+                    }
+                </ol>
+            }
+        </div>
+
+        <div class="col-6">
+            <h3>Détails de l'utilisateur</h3>
+            @if (utilisateurSelectionne == null)
+            {
+                <p>Aucun utilisateur sélectionné</p>
+            }
+            else
+            {
+                <div>
+                    <p><strong>ID:</strong> @utilisateurSelectionne.Id</p>
+                    <p><strong>Nom:</strong> @utilisateurSelectionne.Nom</p>
+                    <p><strong>Total Points:</strong> @utilisateurSelectionne.TotalPoints</p>
+
+                    <h5>Niveaux réussis :</h5>
+                    @if (niveauxReussis != null && niveauxReussis.Any())
+                    {
+                        <ul>
+                            @foreach (var niveau in niveauxReussis)
+                            {
+                                <li>@niveau.Nom - @niveau.Points Points</li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p>Aucun niveau réussi</p>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<UtilisateurAvecPoints> utilisateursAvecPoints;
+    private UtilisateurAvecPoints utilisateurSelectionne;
+    private List<NiveauAvecPoints> niveauxReussis;
+
+    protected override async Task OnInitializedAsync()
+    {
+        utilisateursAvecPoints = await DbContext.ReussitesNiveaux
+            .Where(r => r.Statut == "Accepter")
+            .Include(r => r.Utilisateur)
+            .GroupBy(r => r.UtilisateurId)
+            .Select(g => new UtilisateurAvecPoints
+                {
+                    Id = g.Key,
+                    Nom = g.First().Utilisateur.Nom,
+                    TotalPoints = DbContext.Classements
+                            .Where(c => g.Select(r => r.NiveauId).Contains(c.NiveauId))
+                            .Sum(c => c.Points)
+                })
+            .OrderByDescending(u => u.TotalPoints)
+            .ToListAsync();
+    }
+
+    private async Task AfficherDetailsUtilisateur(int utilisateurId)
+    {
+        utilisateurSelectionne = utilisateursAvecPoints.FirstOrDefault(u => u.Id == utilisateurId);
+
+        niveauxReussis = await DbContext.ReussitesNiveaux
+            .Where(r => r.UtilisateurId == utilisateurId && r.Statut == "Accepter")
+            .Join(
+                DbContext.Classements,      
+                r => r.NiveauId,               
+                c => c.NiveauId,                
+                (reussite, classement) => new NiveauAvecPoints
+                {
+                    Nom = reussite.Niveau.Nom,
+                    Points = classement.Points
+                }
+            )
+            .ToListAsync();
+    }
+
+    private class UtilisateurAvecPoints
+    {
+        public int Id { get; set; }
+        public string Nom { get; set; }
+        public int TotalPoints { get; set; }
+    }
+
+    private class NiveauAvecPoints
+    {
+        public string Nom { get; set; }
+        public int Points { get; set; }
+    }
+}
