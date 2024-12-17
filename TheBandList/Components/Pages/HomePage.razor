@@ -22,6 +22,12 @@
                         var niveau = niveaux.FirstOrDefault(n => n.Id == classement.NiveauId);
                         <li @onclick="async () => await AfficherDetailsNiveau(niveau.Id)">
                             @niveau.Nom - Classement: @classement.ClassementPosition
+                            @if (!string.IsNullOrEmpty(niveau?.Rating?.Image))
+                            {
+                                <img src="data:image/png;base64,@niveau.Rating.Image"
+                                     alt="@niveau.Rating.NomDuFeature"
+                                     style="width: 50px; height: 50px;" />
+                            }
                         </li>
                     }
                 </ul>
@@ -41,21 +47,16 @@
                     <p><strong>Nom:</strong> @niveauSelectionne.Nom</p>
                     <p><strong>Mot de passe:</strong> @niveauSelectionne.MotDePasse</p>
                     <p><strong>Durée:</strong> @ConvertirDurée(niveauSelectionne.Duree)</p>
-                    <p><strong>Date d'ajout:</strong> @niveauSelectionne.DateAjout.ToString("dd/MM/yyyy")</p>
 
                     <p><strong>Difficulté:</strong> @niveauSelectionne.Rating?.DifficulteRate?.NomDeLaDifficulte</p>
                     <p><strong>Vérifieur:</strong> @niveauSelectionne.Verifieur?.Nom</p>
                     <p><strong>Publisher:</strong> @niveauSelectionne.Publisher?.Nom</p>
 
+                    <h5>Image difficulté :</h5>                 
+                    <img src="data:image/png;base64,@niveauSelectionne.Rating.Image" alt="Image de la difficulté" class="img-fluid" />
+                                      
                     <h5>Miniature :</h5>
-                    @if (!string.IsNullOrEmpty(niveauSelectionne.Miniature))
-                    {
-                        <img src="data:image/png;base64,@niveauSelectionne.Miniature" alt="Miniature du niveau" class="img-fluid" />
-                    }
-                    else
-                    {
-                        <p>Aucune miniature disponible</p>
-                    }
+                    <img src="data:image/png;base64,@niveauSelectionne.Miniature" alt="Miniature du niveau" class="img-fluid" />
 
                     <h5>Vidéo de vérification :</h5>
                     @if (!string.IsNullOrEmpty(niveauSelectionne.UrlIframeSrcVerification))
@@ -106,4 +107,64 @@
             }
         </div>
     </div>
-</div>                              
+</div>         
+
+@code {
+    private List<Niveau> niveaux;
+    private List<Classement> classements;
+    private Niveau niveauSelectionne;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            niveaux = await DbContext.Niveaux
+                                     .Include(n => n.Rating)
+                                     .ThenInclude(r => r.DifficulteRate)
+                                     .Select(n => new Niveau
+                                         {
+                                             Id = n.Id,
+                                             Nom = n.Nom,
+                                             Rating = new DifficulteFeature
+                                             {
+                                                 Image = n.Rating.Image
+                                             }
+                                         })
+                                     .ToListAsync();
+
+            classements = await DbContext.Classements
+                                         .OrderBy(c => c.ClassementPosition)
+                                         .ToListAsync();
+        }
+
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur lors du chargement des niveaux et classements: {ex.Message}");
+        }
+    }
+
+    private async Task AfficherDetailsNiveau(int niveauId)
+    {
+        try
+        {
+            niveauSelectionne = await DbContext.Niveaux
+                                               .Include(n => n.Rating)
+                                                   .ThenInclude(r => r.DifficulteRate)
+                                               .Include(n => n.Verifieur)
+                                               .Include(n => n.Publisher)
+                                               .FirstOrDefaultAsync(n => n.Id == niveauId);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur lors du chargement des détails du niveau: {ex.Message}");
+        }
+    }
+
+    private string ConvertirDurée(int dureeEnSecondes)
+    {
+        int minutes = dureeEnSecondes / 60;
+        int secondes = dureeEnSecondes % 60;
+        return $"{minutes} min {secondes} sec";
+    }
+}
+                                            
